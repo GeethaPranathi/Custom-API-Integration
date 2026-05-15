@@ -1,13 +1,13 @@
-# Custom API Integration: SAP S/4HANA to Zetheta FinSight
+# Custom API Integration: SAP S/4HANA to FinSight
 
 ## Overview
-This project focuses on designing and implementing a custom API integration framework for **Meridian Manufacturing Ltd.** to connect their core ERP system (**SAP S/4HANA**) with the **Zetheta FinSight** financial analytics platform.
+This project focuses on designing and implementing a custom API integration framework for **Meridian Manufacturing Ltd.** to connect their core ERP system (**SAP S/4HANA**) with the **FinSight** financial analytics platform.
 
 The goal is to eliminate data silos and provide real-time financial visibility, enabling data-driven decision-making for the CFO and other key stakeholders.
 
 ## Project Scope
 - **Source System**: SAP S/4HANA 2023 FPS02
-- **Destination System**: Zetheta FinSight 4.2
+- **Destination System**: FinSight 4.2
 - **Key Domains**: General Ledger, Accounts Payable, Accounts Receivable, Cost Accounting, Profit Centre Accounting, Material Ledger, Procurement, Sales, Fixed Assets, and Banking.
 - **Regions**: 7 plants across India (Maharashtra, Gujarat, Tamil Nadu).
 
@@ -29,4 +29,4 @@ The project follows a 15-day AI-accelerated innovation lifecycle, covering requi
 - **Internal Audit**: Data integrity and reconciliation.
 
 ---
-*Proprietary to Zetheta Algorithms Private Limited.*
+
