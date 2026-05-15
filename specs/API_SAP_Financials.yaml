@@ -1,0 +1,72 @@
+openapi: 3.0.3
+info:
+  title: SAP S/4HANA Integration Source API (Financials)
+  description: APIs for extracting financial data from SAP S/4HANA for the Meridian Integration Bridge.
+  version: 1.0.0
+servers:
+  - url: https://sap-prd.meridian.in/sap/opu/odata/sap/
+    description: Production SAP S/4HANA Gateway
+paths:
+  /ZZ_CDS_ACDOCA_DELTA_SRV/JournalEntries:
+    get:
+      summary: (SRC-001) Extract General Ledger Entries
+      description: Returns delta journal entries from the Universal Journal (ACDOCA).
+      parameters:
+        - name: deltaToken
+          in: query
+          description: ODP delta token for incremental extraction.
+          schema:
+            type: string
+        - name: companyCode
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful extraction
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deltaToken:
+                    type: string
+                  records:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/JournalEntry'
+  
+  /ZZ_CDS_AP_DELTA_SRV/VendorOpenItems:
+    get:
+      summary: (SRC-002) Extract Accounts Payable
+      description: Returns open and cleared items for vendors (BSIK/BSAK).
+      responses:
+        '200':
+          description: Successful extraction
+
+  /ZZ_CDS_AR_DELTA_SRV/CustomerOpenItems:
+    get:
+      summary: (SRC-003) Extract Accounts Receivable
+      description: Returns open and cleared items for customers (BSID/BSAD).
+      responses:
+        '200':
+          description: Successful extraction
+
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    JournalEntry:
+      type: object
+      properties:
+        BELNR: { type: string, description: "Accounting Document Number" }
+        GJAHR: { type: string, description: "Fiscal Year" }
+        BUKRS: { type: string, description: "Company Code" }
+        BUDAT: { type: string, format: date, description: "Posting Date" }
+        RACCT: { type: string, description: "GL Account" }
+        HSL: { type: number, description: "Amount in Local Currency" }
+        RHCUR: { type: string, description: "Local Currency" }
+        KOSTL: { type: string, description: "Cost Centre" }
+        PRCTR: { type: string, description: "Profit Centre" }

@@ -1,0 +1,66 @@
+openapi: 3.0.3
+info:
+  title: Zetheta FinSight Ingestion API
+  description: Destination API for loading financial data into the FinSight analytics platform.
+  version: 4.2.0
+servers:
+  - url: https://api.meridian.finsight.zetheta.com/v1
+    description: Production FinSight API (AWS Mumbai)
+paths:
+  /journal-entries:
+    post:
+      summary: (DST-001) Load Journal Entries
+      description: Ingests transformed journal entries from SAP.
+      security:
+        - OAuth2: [finance:write]
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/JournalEntryLoad'
+      responses:
+        '201':
+          description: Created
+        '429':
+          description: Rate Limited
+
+  /master-data/cost-centres:
+    post:
+      summary: (DST-004) Load Cost Centres
+      responses:
+        '201':
+          description: Created
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.zetheta.com/oauth/token
+          scopes:
+            finance:write: Post financial data
+            masterdata:write: Post master data
+  schemas:
+    JournalEntryLoad:
+      type: object
+      required: [documentId, postingDate, amountLC, localCurrency]
+      properties:
+        documentId: { type: string, example: "MC01-2026-100045" }
+        postingDate: { type: string, format: date }
+        amountLC: { type: number }
+        amountTC: { type: number }
+        localCurrency: { type: string, pattern: "^[A-Z]{3}$" }
+        transactionCurrency: { type: string, pattern: "^[A-Z]{3}$" }
+        costCentre: { type: string }
+        profitCentre: { type: string }
+        isReversal: { type: boolean, default: false }

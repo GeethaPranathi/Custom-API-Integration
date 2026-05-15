@@ -1,0 +1,36 @@
+openapi: 3.0.3
+info:
+  title: SAP S/4HANA Integration Source API (Logistics & Assets)
+  description: APIs for extracting logistics and asset data from SAP S/4HANA.
+  version: 1.0.0
+paths:
+  /ZZ_CDS_PURCHASING_SRV/PurchaseOrders:
+    get:
+      summary: (SRC-007) Extract Purchase Orders
+      responses:
+        '200':
+          description: OK
+  /ZZ_CDS_SALES_SRV/SalesOrders:
+    get:
+      summary: (SRC-008) Extract Sales Orders
+      responses:
+        '200':
+          description: OK
+  /ZZ_CDS_ASSETS_SRV/FixedAssets:
+    get:
+      summary: (SRC-009) Extract Fixed Assets
+      responses:
+        '200':
+          description: OK
+  /ZZ_CDS_BANK_SRV/BankStatements:
+    get:
+      summary: (SRC-010) Extract Bank Statements
+      responses:
+        '200':
+          description: OK
+  /ZZ_CDS_INVENTORY_SRV/MaterialInventory:
+    get:
+      summary: (SRC-012) Extract Inventory Data
+      responses:
+        '200':
+          description: OK

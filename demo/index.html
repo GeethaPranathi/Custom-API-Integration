@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meridian | ERP Integration Dashboard</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="logo">MERIDIAN <span>BRIDGE</span></div>
+        <div class="header-right">
+            <div class="status-pill" id="pipelineStatus">PIPELINE ACTIVE</div>
+            <div class="time-pill" id="currentTime">00:00:00</div>
+        </div>
+    </header>
+
+    <main>
+        <aside class="sidebar">
+            <div class="card">
+                <div class="card-header">Control Center</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">Throughput</span>
+                        <span class="stat-value" id="throughputVal">37.8 <small>rec/s</small></span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Latency (P95)</span>
+                        <span class="stat-value" id="latencyVal">1.2s</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Success Rate</span>
+                        <span class="stat-value" style="color: var(--success);" id="successRateVal">99.98%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">DLQ Depth</span>
+                        <span class="stat-value" style="color: var(--warning);" id="dlqVal">17</span>
+                    </div>
+                </div>
+                
+                <div class="card-header">Navigation</div>
+                <div class="nav-list">
+                    <button class="nav-btn active" data-tab="sim">Simulation Flow</button>
+                    <button class="nav-btn" data-tab="arch">Architecture (C4)</button>
+                    <button class="nav-btn" data-tab="specs">API Specifications</button>
+                    <button class="nav-btn" data-tab="logs">Audit Logs</button>
+                </div>
+
+                <div class="sidebar-footer">
+                    <button id="resetDash" class="btn-outline">RESET DASHBOARD</button>
+                </div>
+            </div>
+        </aside>
+
+        <section class="content">
+            <div id="simTab" class="tab-content active">
+                <div class="card main-card">
+                    <div class="card-header">End-to-End Integration Simulation</div>
+                    <div class="simulation-view">
+                        <div class="data-flow">
+                            <div class="node">
+                                <div class="node-icon">SAP</div>
+                                <div class="node-label">S/4HANA</div>
+                            </div>
+                            <div class="arrow-container">
+                                <div class="arrow" id="arrow1"></div>
+                                <div class="particle" id="particle1"></div>
+                            </div>
+                            <div class="node">
+                                <div class="node-icon bridge">ETL</div>
+                                <div class="node-label">Bridge</div>
+                            </div>
+                            <div class="arrow-container">
+                                <div class="arrow" id="arrow2"></div>
+                                <div class="particle" id="particle2"></div>
+                            </div>
+                            <div class="node">
+                                <div class="node-icon target">KPI</div>
+                                <div class="node-label">FinSight</div>
+                            </div>
+                        </div>
+                        
+                        <div class="sim-controls">
+                            <button id="runSim" class="btn-primary">TRIGGER SYNC</button>
+                            <div class="sim-status-box">
+                                <span id="simStatus">Ready for manual trigger...</span>
+                                <div class="progress-bar-bg"><div id="progressBar" class="progress-bar"></div></div>
+                            </div>
+                        </div>
+
+                        <div class="live-feed" id="log">
+                            <div class="log-entry info">[SYSTEM] Integration Bridge v1.0.0 initialized.</div>
+                            <div class="log-entry info">[SYSTEM] OAuth token refreshed.</div>
+                            <div class="log-entry info">[SAP] Polling ODP delta for GL...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="archTab" class="tab-content">
+                <div class="card main-card">
+                    <div class="card-header">System Architecture (C4 Level 2)</div>
+                    <div class="arch-view">
+                        <div class="mermaid">
+flowchart TD
+    subgraph SAP
+        CDS[CDS Views]
+        ODP[ODP Provider]
+    end
+
+    subgraph AWS [Integration Bridge]
+        APIGW[API Gateway]
+        Ingest[Ingestion Service]
+        Kafka[Apache Kafka]
+        Transform[Transformation Engine]
+        Recon[Reconciliation Service]
+        Redis[Redis Cache]
+        DLQ[Dead Letter Queue]
+    end
+
+    subgraph Zetheta [FinSight Target]
+        FSAPI[FinSight REST API]
+        Dash[Reporting Dashboard]
+    end
+
+    ODP -- "ODP/RFC" --> Ingest
+    Ingest -- "Raw Data" --> Kafka
+    Kafka -- "Consume" --> Transform
+    Transform -- "Mapping" --> Redis
+    Transform -- "Clean Data" --> Kafka
+    Kafka -- "Push" --> FSAPI
+    FSAPI --> Dash
+    Transform -- "Errors" --> DLQ
+    Recon -- "Verify" --> ODP
+    Recon -- "Verify" --> FSAPI
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="specsTab" class="tab-content">
+                <div class="card main-card">
+                    <div class="card-header">API Specification Preview</div>
+                    <div class="specs-view">
+                        <div class="code-block">
+                            <div class="code-header">GET /JournalEntries (SAP Source)</div>
+                            <pre><code>{
+  "deltaToken": "20260515_090000",
+  "records": [
+    {
+      "BELNR": "10004582",
+      "GJAHR": "2026",
+      "BUKRS": "MC01",
+      "HSL": 24500.50,
+      "RHCUR": "INR"
+    }
+  ]
+}</code></pre>
+                        </div>
+                        <div class="code-block">
+                            <div class="code-header">POST /journal-entries (FinSight Target)</div>
+                            <pre><code>{
+  "documentId": "MC01-2026-10004582",
+  "postingDate": "2026-05-15",
+  "amountLC": 24500.50,
+  "localCurrency": "INR",
+  "isReversal": false
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="logsTab" class="tab-content">
+                <div class="card main-card">
+                    <div class="card-header">Full Audit Logs</div>
+                    <div class="logs-view">
+                        <table class="logs-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Level</th>
+                                    <th>Domain</th>
+                                    <th>Action</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditLogBody">
+                                <tr>
+                                    <td>09:30:45</td>
+                                    <td><span class="tag info">INFO</span></td>
+                                    <td>GL</td>
+                                    <td>Extraction Started</td>
+                                    <td><span class="text-success">OK</span></td>
+                                </tr>
+                                <tr>
+                                    <td>09:31:12</td>
+                                    <td><span class="tag info">INFO</span></td>
+                                    <td>AP</td>
+                                    <td>Delta Sync Complete</td>
+                                    <td><span class="text-success">OK</span></td>
+                                </tr>
+                                <tr>
+                                    <td>09:32:05</td>
+                                    <td><span class="tag warn">WARN</span></td>
+                                    <td>AR</td>
+                                    <td>Rate Limit Alert</td>
+                                    <td><span class="text-warning">THROTTLED</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <aside class="incidents">
+            <div class="card">
+                <div class="card-header">Real-time Incidents</div>
+                <div class="incident-list" id="incidentList">
+                    <div class="incident-item warn">
+                        <div class="incident-title">Rate limit threshold reached</div>
+                        <div class="incident-meta">10:15 AM - 85% Utilization</div>
+                    </div>
+                    <div class="incident-item error">
+                        <div class="incident-title">4 records routed to DLQ</div>
+                        <div class="incident-meta">09:30 AM - Mapping Error</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script type="module" src="/main.ts"></script>
+</body>
+</html>
